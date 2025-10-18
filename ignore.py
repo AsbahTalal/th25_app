@@ -1,22 +1,16 @@
 import pygame as pg
-import sys
+from sys import exit
+
+#variables
+width = 400
+height = 500
+
 pg.init()
+window = pg.display.setmode((width,height))
+pg.display.set_caption("Temp")
 
-class Game:
-    def __init__(self):
-        self.width = 1920
-        self.height = 1080
-        self.win=pg.display.set_mode((self.width, self.height))
-        self.bg_img=pg.image.load("1.png").convert()
-        self.gameLoop()
-
-    def gameLoop(self):
-        while True:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    pg.quit()
-                    sys.exit()
-            self.win.blit(self.bg_img,(0,0))
-            pg.display.update()
-
-game = Game()
+while True:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
+            exit()
