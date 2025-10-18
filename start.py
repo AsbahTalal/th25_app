@@ -18,7 +18,6 @@ startScreen = pygame.image.load('startScreen.png').convert()
 
 white = (230,230,255)
 # Fonts
-font_large = pygame.font.SysFont("Arial", 100)
 
 
 clock = pygame.time.Clock()
@@ -45,7 +44,6 @@ def start_sequence():
 
     #Message
     screen.fill(white)
-    show_message("You have to get to class on time", 500, font_large, [0,0,0])
     pygame.display.flip()
     time.sleep(1)
     screen.fill(white)
@@ -72,7 +70,6 @@ def main_game():
     running = True
     while running:
         screen.fill(white)
-        show_message("Game Running... (replace with your dino logic)", HEIGHT//2, font_small)
         pygame.display.flip()
 
         for event in pygame.event.get():
