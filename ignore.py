@@ -4,6 +4,11 @@ import math
 
 #initiates app window
 pg.init()
+pg.mixer.init()
+pg.mixer.music.load("kahoot.mp3")
+pg.mixer.music.play(-1)
+pg.mixer.music.pause()
+
 info = pg.display.Info()
 window = pg.display.set_mode((info.current_w,info.current_h))
 
@@ -93,8 +98,15 @@ def game():
             window.blit(rev_img, rev_rect)
             window.blit(startButton, (323,340.5))
             window.blit(clock_img, (960,450))
+            
+            #alarm sound
+            alarm = pg.mixer.Sound("alarmBeep.mp3")
+            pg.mixer.Sound.set_volume(alarm,1)
+            alarm.play(0)
         #scrolling
         else:
+            #music plays
+            pg.mixer.music.unpause()
             i = 0
             while(i < tiles):
                 window.blit(bg_img, (bg_img.get_width()*i + scroll,0))
