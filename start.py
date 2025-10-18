@@ -4,12 +4,18 @@ import time
 
 # Initialize pygame
 pygame.init()
+pygame.mixer.init()
+pygame.mixer.music.load("kahoot.mp3")
+pygame.mixer.music.play(-1)
+pygame.mixer.music.pause()
+
 
 # Screen setup
 WIDTH, HEIGHT = 1920, 1080
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-alarmScreen = pygame.image.load('alarm.png')
-startScreen = pygame.image.load('start.png').convert()
+alarmScreen = pygame.image.load('alarmScreen.png')
+startScreen = pygame.image.load('startScreen.png').convert()
+
 white = (230,230,255)
 # Fonts
 font_large = pygame.font.SysFont("Arial", 100)
@@ -30,14 +36,18 @@ def start_sequence():
     # Step 1: Alarm screen
     screen.blit(alarmScreen,((0),(0)))
     pygame.display.flip()
-    time.sleep(1)
-    #TODO alarm Sound
+
+    #music loading alarm sound
+    alarm = pygame.mixer.Sound("alarmBeep.mp3")
+    pygame.mixer.Sound.set_volume(alarm,1)
+    alarm.play(0)
+    time.sleep(4)
 
     #Message
     screen.fill(white)
     show_message("You have to get to class on time", 500, font_large, [0,0,0])
     pygame.display.flip()
-    time.sleep(.8)
+    time.sleep(1)
     screen.fill(white)
     screen.blit(startScreen,(0,0))
     pygame.display.flip()
@@ -48,6 +58,8 @@ def start_sequence():
         screen.blit(startScreen,(0,0))
         pygame.display.flip()
 
+        #start the music up
+        pygame.mixer.music.unpause()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
