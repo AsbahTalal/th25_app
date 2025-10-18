@@ -8,3 +8,4 @@ print(mylist[-3:])
 
 #changes 
 
+i=6
