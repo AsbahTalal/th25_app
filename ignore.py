@@ -85,7 +85,11 @@ def game():
     popUp_dur = 700
     #position variables
     rev_rect = rev_img.get_rect()
+<<<<<<< Updated upstream
     rev_rect.center = (info.current_w*0.25,info.current_h*0.87)
+=======
+    rev_rect.center = (info.current_w * 0.25,info.current_h*0.87)
+>>>>>>> Stashed changes
     original_Y = rev_rect.centery
 
     #jump and alarm 
@@ -146,11 +150,17 @@ def game():
             while(i < tiles):
                 window.blit(bg_img, (bg_img.get_width()*i + scroll,0))
                 i+= 1
+<<<<<<< Updated upstream
             scroll -= 150
             #if reaches zach
             if abs(scroll) > bg_img.get_width()-1800:
                 scroll =  -(bg_img.get_width() - 1800)
                 gameEnded = True
+=======
+            scroll -= 8.2
+            if abs(scroll) > bg_img.get_width():
+                scroll = 0
+>>>>>>> Stashed changes
 
             #stopwatch stuff
             #math
