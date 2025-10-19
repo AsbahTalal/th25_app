@@ -182,6 +182,7 @@ def game():
     obstacles = []
     collisionCount = 0
     winner = True
+    quiz = False
     
 
     def move():
@@ -254,7 +255,7 @@ def game():
             #if key pressed
             if event.type == pg.KEYDOWN:
                 #if spacebar
-                if event.key == pg.K_SPACE and gameStarted and jumps_left > 0:
+                if event.key == pg.K_SPACE and gameStarted and jumps_left > 0 and not quiz:
                     velocity_y = -jump_power
                     jumps_left -= 1
                     jumpSound.play()
@@ -300,6 +301,20 @@ def game():
                     scroll = -(bg_img.get_width() - 1800)
                     gameEnded = True
                     obstacles.clear()
+                #gravity = 0.8
+                #rev
+                velocity_y += gravity
+                rev_rect.centery += velocity_y
+
+                #landing, resest values
+                if rev_rect.centery >= original_Y:
+                    rev_rect.centery = original_Y
+                    velocity_y = 0
+                    jumps_left = 2
+
+                #update jump image
+                disp_PopUp = rev_rect.centery < original_Y
+                window.blit(rev_img_jump if disp_PopUp else rev_img, rev_rect)
                 
             else:
                 # Frozen background
@@ -308,6 +323,11 @@ def game():
                     window.blit(bg_img, (bg_img.get_width()*i + scroll, 0))
                     i += 1
                 obs_speed = 0
+                velocity_y = 0
+                if disp_PopUp:
+                    window.blit(rev_img_jump, rev_rect)
+                else:
+                    window.blit(rev_img, rev_rect)
                 
 
             #stopwatch stuff
@@ -322,19 +342,6 @@ def game():
                 timer = font.render(stopwatch_text, True, timer_color)
                 window.blit(timer, (50, 50))
 
-                #rev
-                velocity_y += gravity
-                rev_rect.centery += velocity_y
-
-                #landing, resest values
-                if rev_rect.centery >= original_Y:
-                    rev_rect.centery = original_Y
-                    velocity_y = 0
-                    jumps_left = 2
-
-                #update jump image
-                disp_PopUp = rev_rect.centery < original_Y
-                window.blit(rev_img_jump if disp_PopUp else rev_img, rev_rect)
             elif gameEnded and winner:
                 #stop sounds
                 jumpSound.stop()
@@ -392,6 +399,7 @@ def game():
 
             # ----- Draw quiz pop-up if active -----
             if quiz_active:
+                
                 # darken the scene
                 window.blit(_OVERLAY, (0, 0))
                 # show the current question image centered
@@ -402,6 +410,7 @@ def game():
                 hint = font.render("Press A / B / C / D", True, (255, 255, 255))
                 hint_rect = hint.get_rect(center=(info.current_w//2, qy + qimg.get_height() + 30))
                 window.blit(hint, hint_rect)
+                
         #continously update window
         pg.display.update()
         clock.tick(60)
