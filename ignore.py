@@ -144,15 +144,13 @@ def game():
             pg.mixer.music.unpause()
             #scroll
             i = 0
-            while i < tiles:
-                window.blit(bg_img, (bg_img.get_width() * i + scroll, 0))
-                i += 1
-            scroll -= 150  # scroll speed
-
-            # check if reached end
-            total_bg_width = bg_img.get_width() * tiles
-            if abs(scroll) > total_bg_width - info.current_w:
-                scroll = -(total_bg_width - info.current_w)
+            while(i < tiles):
+                window.blit(bg_img, (bg_img.get_width()*i + scroll,0))
+                i+= 1
+            scroll -= 150
+            #if reaches zach
+            if abs(scroll) > bg_img.get_width()-1800:
+                scroll =  -(bg_img.get_width() - 1800)
                 gameEnded = True
 
             #stopwatch stuff
