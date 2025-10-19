@@ -146,6 +146,10 @@ def game():
             scroll -= 6
             if abs(scroll) > bg_img.get_width():
                 scroll = 0
+            scroll -= 90
+            #if reaches zach
+            if abs(scroll) > bg_img.get_width()-1800:
+                scroll =  -(bg_img.get_width() - 1800)
 
             #stopwatch stuff
             #math
@@ -181,6 +185,7 @@ def game():
         pg.display.update()
         clock.tick(60)
         
+
 #calling both screens to run
 startScreen()
 game()
