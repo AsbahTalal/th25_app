@@ -15,6 +15,13 @@ pg.mixer.music.pause()
 info = pg.display.Info()
 window = pg.display.set_mode((info.current_w,info.current_h))
 
+#Obstacle class
+class Obstacle(pg.Rect):
+        def __init__(self, img):
+            pg.Rect.__init__(self, obstacle_x, obstacle_y, obstacle_width, obstacle_height)
+            self.img = img
+            self.passed = False
+
 #start screen
 def startScreen():
     #creates start window 
@@ -48,7 +55,8 @@ def game():
     pg.display.set_caption("Rev Run")
     #Clock - controls framerate 
     clock = pg.time.Clock()
-
+    obstacle_timer = pg.USEREVENT + 0
+    pg.time.set_timer(obstacle_timer,300000)
     #images
     #bg image
     bg_img = pg.image.load("background.png").convert()
@@ -87,22 +95,45 @@ def game():
     original_Y = rev_rect.centery
 
     #obstacles
-    
     obstacle_x = WIDTH #to be defined
     obstacle_y = 0
-    obstacle_width = 0 #to be defined
-    obstacle_height = 0
-    class obstacle(pg.Rect):
-        def __init__(self, img):
-            pg.Rect.__init__(self, obstacle_x, obstacle_y, obstacle_width, obstacle_height)
-            self.img = img
-            self.passed = False
-    #obstacle creations
+    obstacle_width = 100 #to be defined
     obstacle_height = 200
-    obstacles = []
-    create_obstacles(obstacles,obstacle_height)
+    #possible obstacle images
+    possObstacles = []
+    #bench
+    bench_img = pg.image.load('bench.png',)
+    ogWidth, ogHeight = bench_img.get_size()
+    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
+    bench_img = pg.transform.scale((obstacle_height,obstacle_width))
+    possObstacles.append(bench_img)
+    #duck
+    duck_img = pg.image.load('duck.png',)
+    ogWidth, ogHeight = duck_img.get_size()
+    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
+    duck_img = pg.transform.scale(obstacle_height)
+    possObstacles.append(duck_img)
+    #scooter
+    scooter_img = pg.image.load('scooter.png',)
+    ogWidth, ogHeight = scooter_img.get_size()
+    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
+    scooter_img = pg.transform.scale(obstacle_height)
+    possObstacles.append(scooter_img)
+    #person
+    person1_img = pg.image.load('person1.png',)
+    ogWidth, ogHeight = person1_img.get_size()
+    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
+    person1_img = pg.transform.scale(obstacle_height)
+    possObstacles.append(person1_img)
 
     
+    #obstacle creations
+    obstacles = []
+    
+    def create_obstacles():
+        specific_obs = Obstacle(possObstacles[math.random(len(possObstacles))])
+        obstacles.append(specific_obs)
+
     #jump and alarm 
     alarm = pg.mixer.Sound("alarmBeep.mp3")
     jumpSound = pg.mixer.Sound("jump.mp3")
@@ -204,31 +235,6 @@ def game():
         pg.display.update()
         clock.tick(60)
 
-def create_obstacles(obstacles,obstacle_height):
-    #bench
-    bench_img = pg.image.load('bench.png',)
-    ogWidth, ogHeight = bench_img.get_size()
-    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
-    bench_img = pg.transform.scale((obstacle_height,obstacle_width))
-    obstacles.append(bench_img)
-    #duck
-    duck_img = pg.image.load('duck.png',)
-    ogWidth, ogHeight = duck_img.get_size()
-    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
-    duck_img = pg.transform.scale(obstacle_height)
-    obstacles.append(duck_img)
-    #scooter
-    scooter_img = pg.image.load('scooter.png',)
-    ogWidth, ogHeight = scooter_img.get_size()
-    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
-    scooter_img = pg.transform.scale(obstacle_height)
-    obstacles.append(scooter_img)
-    #person
-    person1_img = pg.image.load('person1.png',)
-    ogWidth, ogHeight = person1_img.get_size()
-    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
-    person1_img = pg.transform.scale(obstacle_height)
-    obstacles.append(person1_img)
 
 
 
