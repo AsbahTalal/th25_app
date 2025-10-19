@@ -28,7 +28,7 @@ class Obstacle(pg.Rect):
             self.passed = False
             
 #checkpoints for quiz questions
-CHECKPOINT_XS = [2319, 4016, 7431, 10834, 17256, 19349, 24752, 30806, 33012, 34992]
+CHECKPOINT_XS = [1680, 3680, 6680, 9880, 16480, 18580, 23980, 29580, 32330, 34480]
 #answers for questions
 # correct answers for each question image (A/B/C/D). Order must match q1.png, q2.png, ...
 QUIZ_ANSWERS  = ['D','B','C','C','A','A','D','D','A', 'A']  
@@ -167,6 +167,16 @@ def game():
     possObstacles.append(load_scaled_obstacles("duck.png"))
     possObstacles.append(load_scaled_obstacles("bus.png"))
     possObstacles.append(load_scaled_obstacles("person1.png"))
+    possObstacles.append(load_scaled_obstacles("person2.png"))
+    possObstacles.append(load_scaled_obstacles("person3.png"))
+    possObstacles.append(load_scaled_obstacles("person4.png"))
+    possObstacles.append(load_scaled_obstacles("person5.png"))
+    possObstacles.append(load_scaled_obstacles("person6.png"))
+    possObstacles.append(load_scaled_obstacles("person7.png"))
+    possObstacles.append(load_scaled_obstacles("person8.png"))
+    
+    
+    
 
     #obstacle creations
     obstacles = []
@@ -189,8 +199,16 @@ def game():
         imageWidth = imageSurf.get_width()
         specific_obs = Obstacle(imageSurf,spawning,imageWidth)
         obstacles.append(specific_obs)
-
-        
+    
+    
+    def displayHearts(lives,rightHeartX):
+        heart = pg.image.load('heart1.png')
+        heart = pg.transform.scale(heart,(70,70))
+        heartX = rightHeartX
+        for i in range(lives):
+            window.blit(heart,(heartX,50))
+            heartX -= 100
+           
 
     #jump and alarm 
     alarm = pg.mixer.Sound("alarmBeep.mp3")
@@ -230,6 +248,7 @@ def game():
                     else:
                         # Wrong: briefly flash the stopwatch red
                         wrong_flash_until = pg.time.get_ticks() + WRONG_FLASH_MS
+                        print("wrong answer")
                 # ignore all other input while quiz is up
                 continue
             #if key pressed
@@ -260,6 +279,7 @@ def game():
             window.blit(startButton, (323,340))
             window.blit(clock_img, (960,450))
             
+            
 
         
         #when game starts, scrolling
@@ -274,12 +294,13 @@ def game():
                     i+= 1
                 scroll -= 9
                 obs_speed = -12
+                distance += 9
                 #if reaches zach
                 if (not gameEnded) and abs(scroll) > bg_img.get_width() - 1800:
                     scroll = -(bg_img.get_width() - 1800)
                     gameEnded = True
                     obstacles.clear()
-                distance += 10
+                
             else:
                 # Frozen background
                 i = 0
@@ -295,9 +316,10 @@ def game():
                 elapsed_time = (pg.time.get_ticks() - start_time) // 1000  # seconds
                 minutes = elapsed_time // 60
                 seconds = elapsed_time % 60
+                timer_color = (255, 0, 0) if pg.time.get_ticks() < wrong_flash_until else (0, 0, 0)
                 stopwatch_text = f"{minutes:02}:{seconds:02}"
                 #displays stop watch
-                timer = font.render(stopwatch_text, True, (0,0,0))
+                timer = font.render(stopwatch_text, True, timer_color)
                 window.blit(timer, (50, 50))
 
                 #rev
@@ -349,10 +371,13 @@ def game():
         #if game has started
         if gameStarted and not gameEnded:
             move()
+            displayHearts(5-collisionCount,info.current_w-100)
             for obstacle in obstacles:
                 window.blit(obstacle.img, obstacle)
                 if rev_rect.colliderect(obstacle):
                     collisionCount += 1
+                    collision = pg.mixer.Sound('crash.mp3')
+                    collision.play()
                     obstacles.remove(obstacle)
                     if collisionCount >= 5:
                         gameEnded = True
