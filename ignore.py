@@ -15,13 +15,6 @@ pg.mixer.music.pause()
 info = pg.display.Info()
 window = pg.display.set_mode((info.current_w,info.current_h))
 
-#Obstacle class
-class Obstacle(pg.Rect):
-        def __init__(self, img):
-            pg.Rect.__init__(self, obstacle_x, obstacle_y, obstacle_width, obstacle_height)
-            self.img = img
-            self.passed = False
-
 #start screen
 def startScreen():
     #creates start window 
@@ -55,7 +48,7 @@ def game():
     pg.display.set_caption("Rev Run")
     #Clock - controls framerate 
     clock = pg.time.Clock()
-    
+
     #images
     #bg image
     bg_img = pg.image.load("background.jpg").convert()
@@ -94,46 +87,6 @@ def game():
     rev_rect = rev_img.get_rect()
     rev_rect.center = (info.current_w*0.25,info.current_h*0.87)
     original_Y = rev_rect.centery
-
-    #obstacles
-    obstacle_x = info.current_w #to be defined
-    obstacle_y = 0
-    obstacle_width = 100 #to be defined
-    obstacle_height = 200
-    #possible obstacle images
-    possObstacles = []
-    #bench
-    bench_img = pg.image.load('bench.png',)
-    ogWidth, ogHeight = bench_img.get_size()
-    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
-    bench_img = pg.transform.scale((obstacle_height,obstacle_width))
-    possObstacles.append(bench_img)
-    #duck
-    duck_img = pg.image.load('duck.png',)
-    ogWidth, ogHeight = duck_img.get_size()
-    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
-    duck_img = pg.transform.scale(obstacle_height)
-    possObstacles.append(duck_img)
-    #scooter
-    scooter_img = pg.image.load('scooter.png',)
-    ogWidth, ogHeight = scooter_img.get_size()
-    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
-    scooter_img = pg.transform.scale(obstacle_height)
-    possObstacles.append(scooter_img)
-    #person
-    person1_img = pg.image.load('person1.png',)
-    ogWidth, ogHeight = person1_img.get_size()
-    obstacle_width = int(ogHeight * (ogWidth / ogHeight))
-    person1_img = pg.transform.scale(obstacle_height)
-    possObstacles.append(person1_img)
-
-    
-    #obstacle creations
-    obstacles = []
-    
-    def create_obstacles():
-        specific_obs = Obstacle(possObstacles[math.random(len(possObstacles))])
-        obstacles.append(specific_obs)
 
     #jump and alarm 
     alarm = pg.mixer.Sound("alarmBeep.mp3")
@@ -230,8 +183,6 @@ def game():
         #if game has started, update rev if jumping
         if gameStarted:
             window.blit(rev_img_jump if disp_PopUp else rev_img, rev_rect)
-
-
 
         #continously update window
         pg.display.update()
