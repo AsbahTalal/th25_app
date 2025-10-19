@@ -55,8 +55,7 @@ def game():
     pg.display.set_caption("Rev Run")
     #Clock - controls framerate 
     clock = pg.time.Clock()
-    obstacle_timer = pg.USEREVENT + 0
-    pg.time.set_timer(obstacle_timer,300000)
+    
     #images
     #bg image
     bg_img = pg.image.load("background.png").convert()
@@ -95,7 +94,7 @@ def game():
     original_Y = rev_rect.centery
 
     #obstacles
-    obstacle_x = WIDTH #to be defined
+    obstacle_x = info.current_w #to be defined
     obstacle_y = 0
     obstacle_width = 100 #to be defined
     obstacle_height = 200
