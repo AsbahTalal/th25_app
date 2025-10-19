@@ -15,14 +15,17 @@ pg.mixer.music.pause()
 info = pg.display.Info()
 window = pg.display.set_mode((info.current_w,info.current_h))
 
+
 #Obstacle class
-obstacle_y = info.current_h*0.85
+obstacle_y = info.current_h*0.85 - 50
 obstacle_height = 200
 class Obstacle(pg.Rect):
-        def __init__(self, img, totalX, width):
-            super().__init__(totalX, obstacle_y, width, obstacle_height)
+        def __init__(self, img, obstacle_x, width):
+            super().__init__(obstacle_x, obstacle_y, width, obstacle_height)
             self.img = img
             self.passed = False
+            
+            
 
 #start screen
 def startScreen():
@@ -57,13 +60,14 @@ def game():
     pg.display.set_caption("Rev Run")
     #Clock - controls framerate 
     clock = pg.time.Clock()
-    
+
     create_obstacle_timer = pg.USEREVENT + 0
     pg.time.set_timer(create_obstacle_timer,2000) #every 2 secs
 
     #images
     #bg image
     bg_img = pg.image.load("background.jpg").convert()
+    bg_img = pg.transform.scale(bg_img, (bg_img.get_width(), info.current_h))
     scroll = 0
     tiles = math.ceil(info.current_w / bg_img.get_width())+1
 
@@ -101,52 +105,42 @@ def game():
     original_Y = rev_rect.centery
 
     #obstacles
-    obstacle_x = bg_img.get_width() #to be defined
+    obstacle_x = info.current_w #to be defined
     obstacle_y = info.current_h*0.85
     obstacle_height = 200
     #possible obstacle images
     possObstacles = []
-    #bench
-    bench_img = pg.image.load('bench.png',)
-    ogWidth, ogHeight = bench_img.get_size()
-    obstacle_width = int(ogWidth * (ogWidth / ogHeight))
-    bench_img = pg.transform.scale(bench_img,(obstacle_width,obstacle_height))
-    possObstacles.append(Obstacle(bench_img,obstacle_x,obstacle_width))
-    #duck
-    duck_img = pg.image.load('duck.png',)
-    ogWidth, ogHeight = duck_img.get_size()
-    obstacle_width = int(ogWidth * (ogWidth / ogHeight))
-    duck_img = pg.image.load('duck.png',)
-    duck_img = pg.transform.scale(duck_img,(obstacle_width,obstacle_height))
-    possObstacles.append(duck_img)
-    #scooter
-    scooter_img = pg.image.load('scooter.png',)
-    ogWidth, ogHeight = scooter_img.get_size()
-    obstacle_width = int(ogWidth * (ogWidth / ogHeight))
-    scooter_img = pg.transform.scale(scooter_img,(obstacle_width,obstacle_height))
-    possObstacles.append(scooter_img)
-    #person
-    person1_img = pg.image.load('person1.png',)
-    ogWidth, ogHeight = person1_img.get_size()
-    obstacle_width = int(ogWidth * (ogWidth / ogHeight))
-    person1_img = pg.transform.scale(person1_img,(obstacle_width,obstacle_height))
-    possObstacles.append(person1_img)
-
     
+    def load_scaled_obstacles(path):
+        img = pg.image.load(path)
+        ogW,ogH = img.get_size()
+        newW = int(ogW*(obstacle_height/ogH))
+        return pg.transform.scale(img, (newW,obstacle_height))
+    possObstacles.append(load_scaled_obstacles("bench.png"))
+    possObstacles.append(load_scaled_obstacles("duck.png"))
+    possObstacles.append(load_scaled_obstacles("scooter.png"))
+    possObstacles.append(load_scaled_obstacles("person1.png"))
+
     #obstacle creations
     obstacles = []
-    pipe_speed = -2
+    pipe_speed = -8
 
     def move():
         for obstacle in obstacles:
             obstacle.x += pipe_speed
+            print(f"location {obstacle.x}")
+            if obstacle.right < 0:
+                obstacles.remove(obstacle)
+            
     
     def create_obstacles():
-        specific_obs = (possObstacles[random.randint(0,len(possObstacles)-1)])
+        imageSurf = (possObstacles[random.randint(0,len(possObstacles)-1)])
+        spawning = info.current_w
+        imageWidth = imageSurf.get_width()
+        specific_obs = Obstacle(imageSurf,spawning,imageWidth)
         obstacles.append(specific_obs)
 
         print(len(obstacles))
-
 
     #jump and alarm 
     alarm = pg.mixer.Sound("alarmBeep.mp3")
@@ -169,7 +163,6 @@ def game():
             if event.type == pg.QUIT:
                 pg.quit()
                 exit()
-            #pipes timer creation
             if event.type == create_obstacle_timer:
                 create_obstacles()
             #if key pressed
@@ -192,21 +185,18 @@ def game():
                         start_time = pg.time.get_ticks()
                         alarm.stop()
 
-            
+                
         #when game hasnt started, display background, rev, start button, alarm clock
         if not gameStarted:
             window.blit(bg_img, (0,0))
             window.blit(rev_img, rev_rect)
             window.blit(startButton, (323,340.5))
             window.blit(clock_img, (960,450))
-
-            for obstacle in obstacles:
-                window.blit(obstacle.img, obstacle)
-            move()
-
             
+            # for obstacle in obstacles:
+            #     window.blit(obstacle.img, obstacle)
+            # move()
         
-
         #when game starts, scrolling
         else:
             #music plays
@@ -216,7 +206,7 @@ def game():
             while(i < tiles):
                 window.blit(bg_img, (bg_img.get_width()*i + scroll,0))
                 i+= 1
-            scroll -= 150
+            scroll -= 30
             #if reaches zach
             if abs(scroll) > bg_img.get_width()-1800:
                 scroll =  -(bg_img.get_width() - 1800)
@@ -254,7 +244,9 @@ def game():
         if gameStarted:
             window.blit(rev_img_jump if disp_PopUp else rev_img, rev_rect)
             
-
+            for obstacle in obstacles:
+                window.blit(obstacle.img, obstacle)
+            move()
         #continously update window
         pg.display.update()
         clock.tick(60)
