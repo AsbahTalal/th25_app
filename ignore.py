@@ -385,10 +385,36 @@ def game():
                     collisionCount += 1
                     collision = pg.mixer.Sound('crash.mp3')
                     collision.play()
+
                     obstacles.remove(obstacle)
                     if collisionCount >= 5:
                         gameEnded = True
                         winner = False
+
+                    #freeze everything when collision for 2 secs
+                    i = 0
+                    while i < tiles:
+                        window.blit(bg_img, (bg_img.get_width()*i + scroll, 0))
+                        i += 1
+            
+                    endTime = pg.time.get_ticks()
+                    while pg.time.get_ticks() - endTime < 2000:
+                        window.blit(rev_img, rev_rect)
+                        obs_speed = 0
+                        velocity_y = 0
+                        elapsed_time = (pg.time.get_ticks() - start_time) // 1000  # seconds
+                        minutes = elapsed_time // 60
+                        seconds = elapsed_time % 60
+                        timer_color = (255, 0, 0) if pg.time.get_ticks() < wrong_flash_until else (0, 0, 0)
+                        stopwatch_text = f"{minutes:02}:{seconds:02}"
+                        #displays stop watch
+                        timer = font.render(stopwatch_text, True, timer_color)
+                        window.blit(timer, (50, 50))
+                        pg.display.update()
+
+                   
+
+                
             
             # ----- Trigger next quiz when we pass the next checkpoint -----
             if (not quiz_active) and (next_checkpoint_idx < len(CHECKPOINT_XS)):
