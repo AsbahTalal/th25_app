@@ -162,7 +162,13 @@ def game():
     possObstacles.append(load_scaled_obstacles("duck.png"))
     possObstacles.append(load_scaled_obstacles("bus.png"))
     possObstacles.append(load_scaled_obstacles("person1.png"))
-
+    possObstacles.append(load_scaled_obstacles("person2.png"))
+    possObstacles.append(load_scaled_obstacles("person3.png"))
+    possObstacles.append(load_scaled_obstacles("person4.png"))
+    possObstacles.append(load_scaled_obstacles("person5.png"))
+    possObstacles.append(load_scaled_obstacles("person6.png"))
+    possObstacles.append(load_scaled_obstacles("person7.png"))
+    possObstacles.append(load_scaled_obstacles("person8.png"))
     #obstacle creations
     obstacles = []
     
