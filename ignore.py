@@ -1,6 +1,6 @@
 import pygame as pg
 from sys import exit
-import math
+import math,random
 
 #initiates app window
 pg.init()
@@ -14,6 +14,18 @@ pg.mixer.music.pause()
 #size of display
 info = pg.display.Info()
 window = pg.display.set_mode((info.current_w,info.current_h))
+
+
+#Obstacle class
+obstacle_y = info.current_h*0.85 - 50
+obstacle_height = 200
+class Obstacle(pg.Rect):
+        def __init__(self, img, obstacle_x, width):
+            super().__init__(obstacle_x, obstacle_y, width, obstacle_height)
+            self.img = img
+            self.passed = False
+            
+            
 
 #start screen
 def startScreen():
@@ -48,6 +60,9 @@ def game():
     pg.display.set_caption("Rev Run")
     #Clock - controls framerate 
     clock = pg.time.Clock()
+
+    create_obstacle_timer = pg.USEREVENT + 0
+    pg.time.set_timer(create_obstacle_timer,2000) #every 2 secs
 
     #images
     #bg image
@@ -89,6 +104,44 @@ def game():
     rev_rect.center = (info.current_w*0.25,info.current_h*0.87)
     original_Y = rev_rect.centery
 
+    #obstacles
+    obstacle_x = info.current_w #to be defined
+    obstacle_y = info.current_h*0.85
+    obstacle_height = 200
+    #possible obstacle images
+    possObstacles = []
+    
+    def load_scaled_obstacles(path):
+        img = pg.image.load(path)
+        ogW,ogH = img.get_size()
+        newW = int(ogW*(obstacle_height/ogH))
+        return pg.transform.scale(img, (newW,obstacle_height))
+    possObstacles.append(load_scaled_obstacles("bench.png"))
+    possObstacles.append(load_scaled_obstacles("duck.png"))
+    possObstacles.append(load_scaled_obstacles("scooter.png"))
+    possObstacles.append(load_scaled_obstacles("person1.png"))
+
+    #obstacle creations
+    obstacles = []
+    pipe_speed = -8
+
+    def move():
+        for obstacle in obstacles:
+            obstacle.x += pipe_speed
+            print(f"location {obstacle.x}")
+            if obstacle.right < 0:
+                obstacles.remove(obstacle)
+            
+    
+    def create_obstacles():
+        imageSurf = (possObstacles[random.randint(0,len(possObstacles)-1)])
+        spawning = info.current_w
+        imageWidth = imageSurf.get_width()
+        specific_obs = Obstacle(imageSurf,spawning,imageWidth)
+        obstacles.append(specific_obs)
+
+        print(len(obstacles))
+
     #jump and alarm 
     alarm = pg.mixer.Sound("alarmBeep.mp3")
     jumpSound = pg.mixer.Sound("jump.mp3")
@@ -110,6 +163,8 @@ def game():
             if event.type == pg.QUIT:
                 pg.quit()
                 exit()
+            if event.type == create_obstacle_timer:
+                create_obstacles()
             #if key pressed
             if event.type == pg.KEYDOWN:
                 #if spacebar
@@ -137,6 +192,10 @@ def game():
             window.blit(rev_img, rev_rect)
             window.blit(startButton, (323,340.5))
             window.blit(clock_img, (960,450))
+            
+            # for obstacle in obstacles:
+            #     window.blit(obstacle.img, obstacle)
+            # move()
         
         #when game starts, scrolling
         else:
@@ -184,7 +243,10 @@ def game():
         #if game has started, update rev if jumping
         if gameStarted:
             window.blit(rev_img_jump if disp_PopUp else rev_img, rev_rect)
-
+            
+            for obstacle in obstacles:
+                window.blit(obstacle.img, obstacle)
+            move()
         #continously update window
         pg.display.update()
         clock.tick(60)
