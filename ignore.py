@@ -76,9 +76,7 @@ def startScreen():
                 pg.quit()
                 exit()
             #if key pressed 
-            elif event.type == pg.KEYDOWN:
-                #if enter pressed
-                if event.key == pg.K_RETURN:
+            elif event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
                     #ends start screen
                     return
         #continously updates screen
@@ -87,13 +85,10 @@ def startScreen():
 #game screen
 def game():
     #creates game window 
-    pg.display.set_caption("Rev Run")
+    pg.display.set_caption("Campus Chaos")
     #Clock - controls framerate 
     clock = pg.time.Clock()
-
     pg.time.set_timer(CREATE_OBSTACLE_EVENT, 2000)
-
-    
 
     #images
     #bg image
@@ -102,13 +97,20 @@ def game():
     scroll = 0
     tiles = math.ceil(info.current_w / bg_img.get_width())+1
 
+    #end background
+    ebg_img = pg.image.load("endScreen.png").convert()
+    ebg_img = pg.transform.scale(ebg_img, (info.current_w, info.current_h))
+
     #clock
     clock_img = pg.image.load("clock.png").convert_alpha()
-    clock_img = pg.transform.scale(clock_img, (406.2, 221.4))
+    clock_img = pg.transform.scale(clock_img, (406, 221))
 
     #start button
     startButton = pg.image.load("startButton.png").convert_alpha()
     startButton = pg.transform.scale(startButton, (990,342))
+
+    #quit button
+    quitButton = pg.image.load("quitButton.png").convert_alpha()
 
     #font for stopwatch
     font = pg.font.SysFont("Consolas", 60)
@@ -120,7 +122,6 @@ def game():
     quiz_active = False
     quiz_index = -1    # which question is currently shown
     next_checkpoint_idx = 0
-
     wrong_flash_until = 0
 
 
@@ -131,20 +132,24 @@ def game():
     #rev jump image
     rev_img_jump = pg.image.load("dog1.png")
     rev_img_jump = pg.transform.scale(rev_img_jump, (495,270))
-    #other variables for jumping rev
-    #jumps remaining, so she can double jump
-    jumps_left = 2
-    #how high
-    jump_height = 300
-    #if change to jumping rev image
-    disp_PopUp = False
-    #jumping duration
-    popUp_start = 0
-    popUp_dur = 700
-    #position variables
+    #rev jumping variables
+    #make rectangle of rev image
     rev_rect = rev_img.get_rect()
-    rev_rect.center = (info.current_w*0.25,info.current_h*0.87)
+    #make center a certain percentage based on display screen
+    rev_rect.center = (info.current_w * 0.25, info.current_h * 0.85)
+    #original, fixed point
     original_Y = rev_rect.centery
+    #jumping concept - 
+    #default vertical speed 0, because begin without jumping
+    velocity_y = 0
+    #speed downwards
+    gravity = 1
+    #speed upwards
+    jump_power = 25 
+    #amount of jumps, double jump
+    jumps_left = 2
+    #if jump, will change image of rev
+    disp_PopUp = False
 
     #obstacles
     obstacle_x = info.current_w #to be defined
@@ -165,6 +170,8 @@ def game():
 
     #obstacle creations
     obstacles = []
+    collisionCount = 0
+    winner = True
     
 
     def move():
@@ -199,7 +206,7 @@ def game():
         
         #area of start button
         start_Button = pg.Rect(682,573,990, 342)
-
+        quit_Button = pg.Rect(200,100,quitButton.get_width(), quitButton.get_height())
         #events
         for event in pg.event.get():
             #close screen
@@ -228,29 +235,29 @@ def game():
             #if key pressed
             if event.type == pg.KEYDOWN:
                 #if spacebar
-                if event.key == pg.K_SPACE and gameStarted:
-                    if jumps_left > 0:
-                        disp_PopUp = True
-                        popUp_start = pg.time.get_ticks()
-                        jumpSound.play()
-                        jumps_left -= 1
+                if event.key == pg.K_SPACE and gameStarted and jumps_left > 0:
+                    velocity_y = -jump_power
+                    jumps_left -= 1
+                    jumpSound.play()
             #if mouse pressed
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                #if left click
-                if event.button == 1:
-                    #if area of start button was pressed 
-                    if start_Button.collidepoint(event.pos) and not gameStarted:
-                        gameStarted=True
-                        #starts countdown
-                        start_time = pg.time.get_ticks()
-                        alarm.stop()
+            elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                #if area of start button was pressed 
+                if gameEnded:
+                    if quit_Button.collidepoint(event.pos):
+                        pg.quit()
+                        exit()
+                elif start_Button.collidepoint(event.pos) and not gameStarted:
+                    gameStarted=True
+                    #starts countdown
+                    start_time = pg.time.get_ticks()
+                    alarm.stop()
 
                 
         #when game hasnt started, display background, rev, start button, alarm clock
         if not gameStarted:
             window.blit(bg_img, (0,0))
             window.blit(rev_img, rev_rect)
-            window.blit(startButton, (323,340.5))
+            window.blit(startButton, (323,340))
             window.blit(clock_img, (960,450))
             
 
@@ -265,12 +272,13 @@ def game():
                 while(i < tiles):
                     window.blit(bg_img, (bg_img.get_width()*i + scroll,0))
                     i+= 1
-                scroll -= 10
+                scroll -= 9
                 obs_speed = -12
                 #if reaches zach
                 if (not gameEnded) and abs(scroll) > bg_img.get_width() - 1800:
                     scroll = -(bg_img.get_width() - 1800)
                     gameEnded = True
+                    obstacles.clear()
                 distance += 10
             else:
                 # Frozen background
@@ -291,30 +299,64 @@ def game():
                 #displays stop watch
                 timer = font.render(stopwatch_text, True, (0,0,0))
                 window.blit(timer, (50, 50))
-                
-        # if rev is jumping
-        if disp_PopUp:
-            elapsed_time = pg.time.get_ticks() - popUp_start
-            #if jump completed, reset y position of rev
-            if elapsed_time > popUp_dur:
-                disp_PopUp = False
-                rev_rect.centery = original_Y
-                jumps_left = 2
-            #if jumping
-            else:
-                half = popUp_dur/2
-                #going up
-                if elapsed_time < half:
-                    rev_rect.centery = original_Y - int(jump_height * (elapsed_time / half))
-                #going down
+
+                #rev
+                velocity_y += gravity
+                rev_rect.centery += velocity_y
+
+                #landing, resest values
+                if rev_rect.centery >= original_Y:
+                    rev_rect.centery = original_Y
+                    velocity_y = 0
+                    jumps_left = 2
+
+                #update jump image
+                disp_PopUp = rev_rect.centery < original_Y
+                window.blit(rev_img_jump if disp_PopUp else rev_img, rev_rect)
+            elif gameEnded and winner:
+                #stop sounds
+                jumpSound.stop()
+                #let rev land
+                if rev_rect.centery < original_Y:
+                    velocity_y += gravity
+                    rev_rect.centery += velocity_y
+                    disp_PopUp = True
+                    window.blit(rev_img_jump, rev_rect)
                 else:
-                    rev_rect.centery = original_Y - int(jump_height * (1 - (elapsed_time - half) / half))
-        #if game has started, update rev if jumping
-        if gameStarted:
-            window.blit(rev_img_jump if disp_PopUp else rev_img, rev_rect)
+                    rev_rect.centery = original_Y
+                    velocity_y = 0
+                    disp_PopUp = False
+                    window.blit(rev_img, rev_rect)
+                    #wait couple seconds
+                    if 'endTime' not in locals():
+                        endTime = pg.time.get_ticks() 
+
+                    elapsed_since_end = pg.time.get_ticks() - endTime
+                    if elapsed_since_end < 1000:
+                        window.blit(rev_img, rev_rect)
+                    else:
+                        #end screen
+                        window.fill((0,0,0))
+                        pg.mixer.music.pause()
+                        window.blit(ebg_img, (0,0))
+                        window.blit(quitButton, quit_Button.topleft)
+                        yay = pg.mixer.Sound("success.mp3")
+                        yay.play()
+                        window.blit(rev_img,rev_rect)
+            elif gameEnded and not winner:
+                break
+
+        #if game has started
+        if gameStarted and not gameEnded:
             move()
             for obstacle in obstacles:
                 window.blit(obstacle.img, obstacle)
+                if rev_rect.colliderect(obstacle):
+                    collisionCount += 1
+                    obstacles.remove(obstacle)
+                    if collisionCount >= 3:
+                        gameEnded = True
+                        winner = False
             
             # ----- Trigger next quiz when we pass the next checkpoint -----
             if (not quiz_active) and (next_checkpoint_idx < len(CHECKPOINT_XS)):
@@ -338,7 +380,22 @@ def game():
         #continously update window
         pg.display.update()
         clock.tick(60)
+        
 
 
 startScreen()
-game()
+while True:
+    game()
+    pg.display.set_caption("Lost")
+    window.fill((0,0,0))
+    losing_img = pg.image.load("loser.png").convert()
+    losing_img = pg.transform.scale(losing_img, (info.current_w, info.current_h))
+    restart_button = pg.Rect(428,231,958,166)
+
+    quit_button = pg.Rect(818,931,357,100)
+    for event in pg.event.get():
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            if restart_button.collisdepoint(event.pos):
+                continue
+            elif quit_button.collisdepoint(event.pos):
+                break
