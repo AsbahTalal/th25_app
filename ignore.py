@@ -411,6 +411,7 @@ def game():
                         timer = font.render(stopwatch_text, True, timer_color)
                         window.blit(timer, (50, 50))
                         pg.display.update()
+                        #change
 
                    
 
