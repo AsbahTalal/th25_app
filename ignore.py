@@ -51,7 +51,7 @@ def game():
 
     #images
     #bg image
-    bg_img = pg.image.load("background.png").convert()
+    bg_img = pg.image.load("background.jpg").convert()
     bg_img = pg.transform.scale(bg_img, (bg_img.get_width(), info.current_h))
     scroll = 0
     tiles = math.ceil(info.current_w / bg_img.get_width())+1
@@ -144,13 +144,15 @@ def game():
             pg.mixer.music.unpause()
             #scroll
             i = 0
-            while(i < tiles):
-                window.blit(bg_img, (bg_img.get_width()*i + scroll,0))
-                i+= 1
-            scroll -= 150
-            #if reaches zach
-            if abs(scroll) > bg_img.get_width()-1800:
-                scroll =  -(bg_img.get_width() - 1800)
+            while i < tiles:
+                window.blit(bg_img, (bg_img.get_width() * i + scroll, 0))
+                i += 1
+            scroll -= 150  # scroll speed
+
+            # check if reached end
+            total_bg_width = bg_img.get_width() * tiles
+            if abs(scroll) > total_bg_width - info.current_w:
+                scroll = -(total_bg_width - info.current_w)
                 gameEnded = True
 
             #stopwatch stuff
