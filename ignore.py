@@ -4,9 +4,10 @@ import math,random
 
 #initiates app window
 pg.init()
+#continously updating objects
 CREATE_OBSTACLE_EVENT = pg.USEREVENT + 1
+#initiates sounds mixer
 pg.mixer.init()
-
 #initiates background music, paused until game starts
 pg.mixer.music.load("kahoot.mp3")
 pg.mixer.music.play(-1)
@@ -15,7 +16,6 @@ pg.mixer.music.pause()
 #size of display
 info = pg.display.Info()
 window = pg.display.set_mode((info.current_w,info.current_h))
-
 
 #Obstacle class
 obstacle_y = info.current_h*0.85 +135
@@ -26,11 +26,11 @@ class Obstacle(pg.Rect):
             super().__init__(int(obstacle_x), top, int(width), obstacle_height)
             self.img = img
             self.passed = False
-            
-#checkpoints for quiz questions
+
+#quiz   
+#x coordinates for quiz questions
 CHECKPOINT_XS = [1680, 3680, 6680, 9880, 16480, 18580, 23980, 29580, 32330, 34480]
 #answers for questions
-# correct answers for each question image (A/B/C/D). Order must match q1.png, q2.png, ...
 QUIZ_ANSWERS  = ['D','B','C','C','A','A','D','D','A', 'A']  
 #length to flash timer for wrong guess
 WRONG_FLASH_MS = 700
@@ -42,17 +42,13 @@ for i in range(len(CHECKPOINT_XS)):
     target_w = int(qimg.get_width() * (target_h / qimg.get_height()))
     qimg = pg.transform.smoothscale(qimg, (target_w, target_h))
     QUIZ_IMAGES.append(qimg)
-
-# ---------- 3) SIMPLE HELPERS ----------
-# A dark overlay so the question "pops" over the dimmed game
+#visual dimming effect
 _OVERLAY = pg.Surface((info.current_w, info.current_h), pg.SRCALPHA)
 _OVERLAY.fill((0, 0, 0, 140))
-
-# center any surface on screen
+#center of sdisplay
 def _center_xy(surf):
     r = surf.get_rect()
     return (info.current_w - r.width)//2, (info.current_h - r.height)//2
-
 # map keys to letters for the quiz
 _KEY2LETTER = {pg.K_a: 'A', pg.K_b: 'B', pg.K_c: 'C', pg.K_d: 'D'}
 
@@ -97,33 +93,35 @@ def game():
     scroll = 0
     tiles = math.ceil(info.current_w / bg_img.get_width())+1
 
-    #end background
+    #end background image
     ebg_img = pg.image.load("endScreen.png").convert()
     ebg_img = pg.transform.scale(ebg_img, (info.current_w, info.current_h))
 
-    #clock
+    #clock image
     clock_img = pg.image.load("clock.png").convert_alpha()
     clock_img = pg.transform.scale(clock_img, (406, 221))
 
-    #start button
+    #start button image
     startButton = pg.image.load("startButton.png").convert_alpha()
     startButton = pg.transform.scale(startButton, (990,342))
 
-    #quit button
+    #quit button image
     quitButton = pg.image.load("quitButton.png").convert_alpha()
 
     #font for stopwatch
     font = pg.font.SysFont("Consolas", 60)
 
 
-    #QUIZ STUFF
-    SPEED = 10        # your original scroll speed
-    distance = 0       # how far we've progressed (rightward), derived from scroll
+    #quiz variables
+    #scroll speed
+    SPEED = 10     
+    #x distance
+    distance = 0      
+    #if quiz happening
     quiz_active = False
-    quiz_index = -1    # which question is currently shown
+    quiz_index = -1    
     next_checkpoint_idx = 0
     wrong_flash_until = 0
-
 
     #reveille variables
     #rev image
@@ -152,12 +150,15 @@ def game():
     disp_PopUp = False
 
     #obstacles
-    obstacle_x = info.current_w #to be defined
+    #coords
+    obstacle_x = info.current_w 
     obstacle_y = info.current_h*0.85 + 100
+    #height
     obstacle_height = 200
     #possible obstacle images
     possObstacles = []
     
+    #import obstacle images, scaling 
     def load_scaled_obstacles(path):
         img = pg.image.load(path)
         ogW,ogH = img.get_size()
@@ -174,9 +175,6 @@ def game():
     possObstacles.append(load_scaled_obstacles("person6.png"))
     possObstacles.append(load_scaled_obstacles("person7.png"))
     possObstacles.append(load_scaled_obstacles("person8.png"))
-    
-    
-    
 
     #obstacle creations
     obstacles = []
@@ -184,7 +182,7 @@ def game():
     winner = True
     quiz = False
     
-
+    #obstacle move function
     def move():
         for obstacle in obstacles:
             obstacle.x += obs_speed
@@ -192,8 +190,7 @@ def game():
             if obstacle.right < 0:
                 obstacles.remove(obstacle)
             
-            
-    
+    #create obstacle function
     def create_obstacles():
         imageSurf = (random.choice(possObstacles))
         spawning = info.current_w
@@ -201,7 +198,7 @@ def game():
         specific_obs = Obstacle(imageSurf,spawning,imageWidth)
         obstacles.append(specific_obs)
     
-    
+    #lives display function
     def displayHearts(lives,rightHeartX):
         heart = pg.image.load('heart1.png')
         heart = pg.transform.scale(heart,(70,70))
@@ -210,99 +207,104 @@ def game():
             window.blit(heart,(heartX,50))
             heartX -= 100
            
-
-    #jump and alarm 
+    #jump and alarm sound
     alarm = pg.mixer.Sound("alarmBeep.mp3")
     jumpSound = pg.mixer.Sound("jump.mp3")
     pg.mixer.Sound.set_volume(alarm,1)
     pg.mixer.Sound.set_volume(jumpSound,0.2)
     #continously play alarm until game starts
     alarm.play(-1)
+
+    #game started/ended variables
     gameStarted = False
     gameEnded = False
+
     #while game screen
     while True:
-        
-        #area of start button
+        #area of start button, quit button
         start_Button = pg.Rect(682,573,990, 342)
         quit_Button = pg.Rect(200,100,quitButton.get_width(), quitButton.get_height())
+
         #events
         for event in pg.event.get():
             #close screen
             if event.type == pg.QUIT:
                 pg.quit()
                 exit()
+            #if create obstacle
             if event.type == CREATE_OBSTACLE_EVENT:
                 if gameStarted and (not quiz_active) and (not gameEnded):
-                    print("TIMER EVENT FIRED")
                     create_obstacles()
+            #quiz, check user input
             if quiz_active:
                 if event.type == pg.KEYDOWN and event.key in _KEY2LETTER:
                     choice = _KEY2LETTER[event.key].upper()
                     correct = QUIZ_ANSWERS[quiz_index]
                     if choice == correct:
-                        # Correct: close quiz and resume
+                        #correct, resets variables
                         quiz_active = False
                         quiz_index = -1
                         jumps_left = 2             
                         wrong_flash_until = 0      
                     else:
-                        # Wrong: briefly flash the stopwatch red
+                        #wrong, stopwatch flash red
                         wrong_flash_until = pg.time.get_ticks() + WRONG_FLASH_MS
-                        print("wrong answer")
-                # ignore all other input while quiz is up
+                #ignore all other input while quiz is up
                 continue
             #if key pressed
             if event.type == pg.KEYDOWN:
                 #if spacebar
+                #not active while quiz is up and have jumps remaining
                 if event.key == pg.K_SPACE and gameStarted and jumps_left > 0 and not quiz:
                     velocity_y = -jump_power
                     jumps_left -= 1
                     jumpSound.play()
-            #if mouse pressed
+            #if mouse left clicked
             elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                #if area of start button was pressed 
+                #if game successfully ended, allow user to quiz 
                 if gameEnded:
                     if quit_Button.collidepoint(event.pos):
                         pg.quit()
                         exit()
+                #to start beginning of game w/ start button
                 elif start_Button.collidepoint(event.pos) and not gameStarted:
                     gameStarted=True
                     #starts countdown
                     start_time = pg.time.get_ticks()
                     alarm.stop()
 
-                
         #when game hasnt started, display background, rev, start button, alarm clock
         if not gameStarted:
             window.blit(bg_img, (0,0))
             window.blit(rev_img, rev_rect)
             window.blit(startButton, (323,340))
             window.blit(clock_img, (960,450))
-            
-            
-
         
-        #when game starts, scrolling
+        #when game active
         else:
+
+            #if there is no quiz
             if not quiz_active and not gameEnded:
                 #music plays
                 pg.mixer.music.unpause()
-                #scroll
+
+                #scrolling stuff
                 i = 0
                 while(i < tiles):
                     window.blit(bg_img, (bg_img.get_width()*i + scroll,0))
                     i+= 1
                 scroll -= 9
+                #object speed and distance 
                 obs_speed = -12
                 distance += 9
-                #if reaches zach
-                if (not gameEnded) and abs(scroll) > bg_img.get_width() - 1800:
+
+                #if reaches zach, ends game
+                if abs(scroll) > bg_img.get_width() - 1800:
                     scroll = -(bg_img.get_width() - 1800)
                     gameEnded = True
                     obstacles.clear()
-                #gravity = 0.8
-                #rev
+
+                #rev updates
                 velocity_y += gravity
                 rev_rect.centery += velocity_y
 
@@ -315,14 +317,16 @@ def game():
                 #update jump image
                 disp_PopUp = rev_rect.centery < original_Y
                 window.blit(rev_img_jump if disp_PopUp else rev_img, rev_rect)
-                
+            #if quiz active
             else:
                 # Frozen background
                 i = 0
                 while i < tiles:
                     window.blit(bg_img, (bg_img.get_width()*i + scroll, 0))
                     i += 1
+                #frozen object
                 obs_speed = 0
+                #frozen rev
                 velocity_y = 0
                 if disp_PopUp:
                     window.blit(rev_img_jump, rev_rect)
@@ -330,19 +334,16 @@ def game():
                     window.blit(rev_img, rev_rect)
                 
 
-            #stopwatch stuff
-            #math
-            if not gameEnded:
-                elapsed_time = (pg.time.get_ticks() - start_time) // 1000  # seconds
-                minutes = elapsed_time // 60
-                seconds = elapsed_time % 60
-                timer_color = (255, 0, 0) if pg.time.get_ticks() < wrong_flash_until else (0, 0, 0)
-                stopwatch_text = f"{minutes:02}:{seconds:02}"
-                #displays stop watch
-                timer = font.render(stopwatch_text, True, timer_color)
-                window.blit(timer, (50, 50))
+            elapsed_time = (pg.time.get_ticks() - start_time) // 1000  # seconds
+            minutes = elapsed_time // 60
+            seconds = elapsed_time % 60
+            timer_color = (255, 0, 0) if pg.time.get_ticks() < wrong_flash_until else (0, 0, 0)
+            stopwatch_text = f"{minutes:02}:{seconds:02}"
+            #displays stop watch
+            timer = font.render(stopwatch_text, True, timer_color)
+            window.blit(timer, (50, 50))
 
-            elif gameEnded and winner:
+            if gameEnded and winner:
                 #stop sounds
                 jumpSound.stop()
                 #let rev land
@@ -391,32 +392,6 @@ def game():
                         gameEnded = True
                         winner = False
 
-                    #freeze everything when collision for 2 secs
-                    i = 0
-                    while i < tiles:
-                        window.blit(bg_img, (bg_img.get_width()*i + scroll, 0))
-                        i += 1
-            
-                    endTime = pg.time.get_ticks()
-                    while pg.time.get_ticks() - endTime < 2000:
-                        window.blit(rev_img, rev_rect)
-                        obs_speed = 0
-                        velocity_y = 0
-                        elapsed_time = (pg.time.get_ticks() - start_time) // 1000  # seconds
-                        minutes = elapsed_time // 60
-                        seconds = elapsed_time % 60
-                        timer_color = (255, 0, 0) if pg.time.get_ticks() < wrong_flash_until else (0, 0, 0)
-                        stopwatch_text = f"{minutes:02}:{seconds:02}"
-                        #displays stop watch
-                        timer = font.render(stopwatch_text, True, timer_color)
-                        window.blit(timer, (50, 50))
-                        pg.display.update()
-                        #change
-
-                   
-
-                
-            
             # ----- Trigger next quiz when we pass the next checkpoint -----
             if (not quiz_active) and (next_checkpoint_idx < len(CHECKPOINT_XS)):
                 if distance >= CHECKPOINT_XS[next_checkpoint_idx]:
@@ -450,7 +425,7 @@ def lose():
     while True:
         window.blit(losing_img, (0,0))
         restart_button = pg.Rect(428,231,1377,393)
-        quit_button = pg.Rect(813,917,450,200)
+        quit_button = pg.Rect(671,864,292,120)
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
