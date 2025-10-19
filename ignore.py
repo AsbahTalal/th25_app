@@ -51,7 +51,7 @@ def game():
 
     #images
     #bg image
-    bg_img = pg.image.load("background.jpg").convert()
+    bg_img = pg.image.load("background.png").convert()
     bg_img = pg.transform.scale(bg_img, (bg_img.get_width(), info.current_h))
     scroll = 0
     tiles = math.ceil(info.current_w / bg_img.get_width())+1
