@@ -28,7 +28,4 @@ class Game:
             pg.display.update()
             self.clock.tick(60)
 
-
-    def setUpBgAndGround(self):
-
 game = Game()
