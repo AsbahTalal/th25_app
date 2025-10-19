@@ -51,7 +51,7 @@ def game():
 
     #images
     #bg image
-    bg_img = pg.image.load("background.png").convert()
+    bg_img = pg.image.load("background.jpg").convert()
     scroll = 0
     tiles = math.ceil(info.current_w / bg_img.get_width())+1
 
@@ -74,6 +74,8 @@ def game():
     rev_img_jump = pg.image.load("dog1.png")
     rev_img_jump = pg.transform.scale(rev_img_jump, (495,270))
     #other variables for jumping rev
+    #jumps remaining, so she can double jump
+    jumps_left = 2
     #how high
     jump_height = 300
     #if change to jumping rev image
@@ -94,7 +96,7 @@ def game():
     #continously play alarm until game starts
     alarm.play(-1)
     gameStarted = False
-
+    gameEnded = False
     #while game screen
     while True:
         
@@ -110,11 +112,12 @@ def game():
             #if key pressed
             if event.type == pg.KEYDOWN:
                 #if spacebar
-                if event.key == pg.K_SPACE:
-                    if gameStarted:
+                if event.key == pg.K_SPACE and gameStarted:
+                    if jumps_left > 0:
                         disp_PopUp = True
                         popUp_start = pg.time.get_ticks()
                         jumpSound.play()
+                        jumps_left -= 1
             #if mouse pressed
             elif event.type == pg.MOUSEBUTTONDOWN:
                 #if left click
@@ -143,22 +146,21 @@ def game():
             while(i < tiles):
                 window.blit(bg_img, (bg_img.get_width()*i + scroll,0))
                 i+= 1
-            scroll -= 6
-            if abs(scroll) > bg_img.get_width():
-                scroll = 0
-            scroll -= 90
+            scroll -= 150
             #if reaches zach
             if abs(scroll) > bg_img.get_width()-1800:
                 scroll =  -(bg_img.get_width() - 1800)
+                gameEnded = True
 
             #stopwatch stuff
             #math
-            elapsed_time = (pg.time.get_ticks() - start_time) // 1000  # seconds
-            minutes = elapsed_time // 60
-            seconds = elapsed_time % 60
-            stopwatch_text = f"{minutes:02}:{seconds:02}"
-            #displays stop watch
-            timer = font.render(stopwatch_text, True, (0,0,0))
+            if not gameEnded:
+                elapsed_time = (pg.time.get_ticks() - start_time) // 1000  # seconds
+                minutes = elapsed_time // 60
+                seconds = elapsed_time % 60
+                stopwatch_text = f"{minutes:02}:{seconds:02}"
+                #displays stop watch
+                timer = font.render(stopwatch_text, True, (0,0,0))
             window.blit(timer, (50, 50))
 
         # if rev is jumping
@@ -168,6 +170,7 @@ def game():
             if elapsed_time > popUp_dur:
                 disp_PopUp = False
                 rev_rect.centery = original_Y
+                jumps_left = 2
             #if jumping
             else:
                 half = popUp_dur/2
@@ -184,7 +187,6 @@ def game():
         #continously update window
         pg.display.update()
         clock.tick(60)
-        
 
 #calling both screens to run
 startScreen()
