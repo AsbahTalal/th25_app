@@ -88,7 +88,7 @@ def game():
     pg.display.set_caption("Campus Chaos")
     #Clock - controls framerate 
     clock = pg.time.Clock()
-    pg.time.set_timer(CREATE_OBSTACLE_EVENT, 2000)
+    pg.time.set_timer(CREATE_OBSTACLE_EVENT, 3000)
 
     #images
     #bg image
@@ -128,10 +128,10 @@ def game():
     #reveille variables
     #rev image
     rev_img = pg.image.load("dog2.png")
-    rev_img = pg.transform.scale(rev_img, (495,270))
+    rev_img = pg.transform.scale(rev_img, (259,270))
     #rev jump image
     rev_img_jump = pg.image.load("dog1.png")
-    rev_img_jump = pg.transform.scale(rev_img_jump, (495,270))
+    rev_img_jump = pg.transform.scale(rev_img_jump, (259,270))
     #rev jumping variables
     #make rectangle of rev image
     rev_rect = rev_img.get_rect()
@@ -143,9 +143,9 @@ def game():
     #default vertical speed 0, because begin without jumping
     velocity_y = 0
     #speed downwards
-    gravity = 1
+    gravity = 0.8
     #speed upwards
-    jump_power = 25 
+    jump_power = 24
     #amount of jumps, double jump
     jumps_left = 2
     #if jump, will change image of rev
@@ -225,8 +225,8 @@ def game():
                         # Correct: close quiz and resume
                         quiz_active = False
                         quiz_index = -1
-                        jumps_left = 2               # optional: reset jumps on resume
-                        wrong_flash_until = 0        # clear any red flash
+                        jumps_left = 2             
+                        wrong_flash_until = 0      
                     else:
                         # Wrong: briefly flash the stopwatch red
                         wrong_flash_until = pg.time.get_ticks() + WRONG_FLASH_MS
@@ -354,7 +354,7 @@ def game():
                 if rev_rect.colliderect(obstacle):
                     collisionCount += 1
                     obstacles.remove(obstacle)
-                    if collisionCount >= 3:
+                    if collisionCount >= 5:
                         gameEnded = True
                         winner = False
             
@@ -380,22 +380,33 @@ def game():
         #continously update window
         pg.display.update()
         clock.tick(60)
-        
+
+#lose screen
+def lose():
+    pg.display.set_caption("Losing Screen")
+    losing_img = pg.image.load("loser.png").convert()
+    losing_img = pg.transform.scale(losing_img, (info.current_w, info.current_h))
+    while True:
+        window.blit(losing_img, (0,0))
+        restart_button = pg.Rect(428,231,1377,393)
+        quit_button = pg.Rect(813,917,450,200)
+
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                exit()
+            elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                if restart_button.collidepoint(event.pos):
+                    return    
+                elif quit_button.collidepoint(event.pos):
+                    pg.quit()
+                    exit()
+        pg.display.update()
+
 
 
 startScreen()
 while True:
     game()
-    pg.display.set_caption("Lost")
-    window.fill((0,0,0))
-    losing_img = pg.image.load("loser.png").convert()
-    losing_img = pg.transform.scale(losing_img, (info.current_w, info.current_h))
-    restart_button = pg.Rect(428,231,958,166)
+    lose()
 
-    quit_button = pg.Rect(818,931,357,100)
-    for event in pg.event.get():
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            if restart_button.collisdepoint(event.pos):
-                continue
-            elif quit_button.collisdepoint(event.pos):
-                break
